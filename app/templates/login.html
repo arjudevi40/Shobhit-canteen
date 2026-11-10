@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - Student & Admin Access{% endblock %}
+
+{% block content %}
+<div class="auth-page-wrapper">
+  <div class="auth-card">
+    
+    <!-- Institutional Card Header -->
+    <div class="auth-header">
+      <div class="auth-logo-wrap">
+        <img 
+          src="{{ url_for('static', filename='images/sug_logo_naacA.png') }}" 
+          alt="Shobhit University Gangoh - NAAC 'A' Grade Accredited">
+      </div>
+      <h2>Central Campus Canteen Portal</h2>
+      <p style="margin-top: 4px; font-style: italic; color: #fde68a; font-size: 0.85rem;">
+        "तेजस्वि नावधीतमस्तु" &bull; Empowering Nation Through Education
+      </p>
+      <div style="margin-top: 10px;">
+        <span class="naac-tag">NAAC 'A' GRADE ACCREDITED</span>
+      </div>
+    </div>
+
+    <div class="auth-body">
+      <!-- Fixed Sample Credentials Direct Test Box -->
+      <div class="demo-credentials-box">
+        <div class="demo-credentials-header">
+          <span>⚡ One-Click Demo Credentials</span>
+          <span style="font-size: 0.72rem; color: var(--sug-saffron-dark); font-weight: 800; background: var(--sug-saffron-light); padding: 2px 7px; border-radius: var(--radius-xs);">
+            INSTANT EVALUATION
+          </span>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.85rem; line-height: 1.4;">
+          Click any button below to automatically populate fixed test credentials:
+        </p>
+        <div class="demo-btns-row">
+          <button 
+            type="button" 
+            class="btn btn-outline-primary btn-sm" 
+            onclick="fillDemo('student')"
+            aria-label="Autofill Student test credentials">
+            🎓 Student Demo
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-accent btn-sm" 
+            onclick="fillDemo('admin')"
+            aria-label="Autofill Admin test credentials">
+            🛡️ Admin Demo
+          </button>
+        </div>
+        <div style="margin-top: 0.6rem; text-align: center;">
+          <button 
+            type="button" 
+            class="btn btn-outline btn-sm" 
+            style="font-size: 0.8rem; width: 100%;" 
+            onclick="fillDemo('staff')"
+            aria-label="Autofill Faculty Staff test credentials">
+            👨‍🏫 Faculty / Staff Member Demo
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Login Form -->
+      <form action="{{ url_for('auth.login') }}" method="POST" novalidate>
+        <div class="form-group">
+          <label for="email" class="form-label">University Email ID <span style="color: var(--nonveg-red);" aria-hidden="true">*</span></label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            class="form-control" 
+            placeholder="e.g. student@shobhit.ac.in" 
+            value="{{ email or '' }}" 
+            required 
+            autocomplete="email"
+            inputmode="email"
+            aria-required="true">
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+            <label for="password" class="form-label" style="margin-bottom: 0;">Password <span style="color: var(--nonveg-red);" aria-hidden="true">*</span></label>
+            <button 
+              type="button" 
+              onclick="togglePasswordVisibility()" 
+              id="toggle-pwd-btn"
+              style="background: none; border: none; font-size: 0.825rem; color: var(--sug-navy); font-weight: 700; cursor: pointer; padding: 2px 4px;"
+              aria-label="Toggle password visibility">
+              👁️ Show Password
+            </button>
+          </div>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            class="form-control" 
+            placeholder="Enter your password" 
+            required 
+            autocomplete="current-password"
+            aria-required="true">
+        </div>
+
+        <div style="margin-bottom: 1.5rem; font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+            <input type="checkbox" name="remember" checked style="width: 16px; height: 16px; accent-color: var(--sug-navy);"> Keep me logged in
+          </label>
+          <span style="color: var(--sug-saffron-dark); font-weight: 700; font-size: 0.8rem;">Protected Campus Portal</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-bottom: 1.15rem; font-size: 1.05rem;">
+          Sign In to Canteen Portal &rarr;
+        </button>
+      </form>
+
+      <!-- Instant Direct Access Links (Zero-Type Option) -->
+      <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); text-align: center;">
+        <span style="font-size: 0.825rem; color: var(--text-muted); display: block; margin-bottom: 0.75rem;">
+          Or bypass typing and log in directly:
+        </span>
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+          <a href="{{ url_for('auth.demo_login', role='student') }}" class="btn btn-outline btn-sm">
+            🎓 Instant Student Login
+          </a>
+          <a href="{{ url_for('auth.demo_login', role='admin') }}" class="btn btn-outline btn-sm" style="border-color: var(--sug-saffron); color: var(--sug-saffron-dark); font-weight: 700;">
+            🛡️ Instant Admin Login
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePasswordVisibility() {
+  const pwd = document.getElementById('password');
+  const btn = document.getElementById('toggle-pwd-btn');
+  if (pwd) {
+    const isPassword = pwd.type === 'password';
+    pwd.type = isPassword ? 'text' : 'password';
+    if (btn) {
+      btn.textContent = isPassword ? '🙈 Hide Password' : '👁️ Show Password';
+      btn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+    }
+  }
+}
+</script>
+{% endblock %}

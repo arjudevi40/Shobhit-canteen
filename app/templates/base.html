@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SUG Canteen Express{% endblock %} | Shobhit University Gangoh</title>
+  
+  <!-- Preconnect to Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- Accessible Skip to Content Link -->
+  <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
+  <!-- Top Institutional Bar -->
+  <header class="top-notice-bar" role="banner">
+    <div class="container">
+      <div class="notice-wrapper">
+        <div class="notice-meta">
+          <span>🏛️ <strong>Shobhit University, Gangoh (Saharanpur, UP)</strong></span>
+          <span class="naac-tag">NAAC 'A' GRADE ACCREDITED</span>
+          <span style="opacity: 0.5;">|</span>
+          <span>🕒 Canteen Hours: <strong>8:30 AM – 8:30 PM</strong></span>
+        </div>
+        <div class="notice-meta">
+          {% if is_mongo_connected %}
+            <span class="notice-badge connected" title="Connected to MongoDB database">
+              🟢 Live MongoDB
+            </span>
+          {% else %}
+            <span class="notice-badge standalone" title="Using local high-fidelity database store">
+              🟡 Standalone High-Speed Mode
+            </span>
+          {% endif %}
+          <span style="opacity: 0.5;">|</span>
+          <span>📞 Canteen Desk: <strong>Ext #234</strong></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Navigation Bar -->
+  <nav class="site-header" aria-label="Main Navigation">
+    <div class="container">
+      <div class="nav-wrapper">
+        
+        <!-- Official University Brand & Logo -->
+        <a href="{{ url_for('student.index') }}" class="brand-group" aria-label="Shobhit University Gangoh Canteen Home">
+          <img 
+            src="{{ url_for('static', filename='images/sug_logo_naacA.png') }}" 
+            alt="Shobhit University Gangoh - NAAC 'A' Grade Accredited" 
+            class="brand-logo-img">
+          <div class="brand-divider" aria-hidden="true"></div>
+          <div class="brand-text-block">
+            <span class="brand-main-title">Campus Canteen</span>
+            <span class="brand-sub-badge">Official Dining Portal</span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <ul class="nav-menu-desktop">
+          <li><a href="{{ url_for('student.index') }}">🏠 Home</a></li>
+          <li><a href="{{ url_for('student.menu') }}">🍽️ Food Menu</a></li>
+          <li><a href="{{ url_for('student.my_orders') }}">📋 My Orders</a></li>
+          {% if session.get('user_role') == 'admin' %}
+            <li><a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link">⚙️ Kitchen Display (KDS)</a></li>
+            <li><a href="{{ url_for('admin.menu_management') }}" class="admin-nav-link">📦 Stock Manager</a></li>
+          {% endif %}
+        </ul>
+
+        <!-- Navigation Actions -->
+        <div class="nav-actions">
+          <!-- Cart Button with Dynamic Badge -->
+          <a href="{{ url_for('student.cart') }}" class="cart-nav-btn" id="nav-cart-btn" aria-label="View food tray">
+            <span style="font-size: 1.1rem;">🛒</span>
+            <span>Tray</span>
+            <span class="cart-count-badge" id="nav-cart-count" style="display: none;" aria-live="polite">0</span>
+          </a>
+
+          <!-- User Authentication Section -->
+          {% if session.get('user_email') %}
+            <div class="user-pill">
+              <span class="user-avatar-initial" aria-hidden="true">{{ session.get('user_name', 'U')[0] }}</span>
+              <span style="font-weight: 700;">{{ session.get('user_name', 'Student').split()[0] }}</span>
+              {% if session.get('user_role') == 'admin' %}
+                <span class="naac-tag" style="font-size: 0.68rem; padding: 1px 5px;">ADMIN</span>
+              {% endif %}
+              <a href="{{ url_for('auth.logout') }}" style="color: var(--nonveg-red); font-size: 0.9rem; margin-left: 2px;" title="Logout" aria-label="Logout">🚪</a>
+            </div>
+          {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm">Sign In</a>
+          {% endif %}
+
+          <!-- Mobile Hamburger Toggle Button -->
+          <button type="button" class="mobile-nav-toggle" id="mobile-menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+            <div class="hamburger-icon" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Drawer Menu & Overlay -->
+  <div class="mobile-drawer-overlay" id="mobile-drawer-overlay" aria-hidden="true"></div>
+  <aside class="mobile-drawer" id="mobile-drawer" aria-label="Mobile Navigation">
+    <div class="mobile-drawer-header">
+      <img 
+        src="{{ url_for('static', filename='images/sug_logo_naacA.png') }}" 
+        alt="Shobhit University Gangoh" 
+        style="height: 38px; width: auto; object-fit: contain;">
+      <button type="button" class="mobile-drawer-close" id="mobile-drawer-close" aria-label="Close menu">&times;</button>
+    </div>
+
+    <ul class="mobile-drawer-links">
+      <li><a href="{{ url_for('student.index') }}">🏠 Home Dashboard</a></li>
+      <li><a href="{{ url_for('student.menu') }}">🍽️ Food Menu Catalog</a></li>
+      <li><a href="{{ url_for('student.cart') }}">🛒 Food Tray / Checkout</a></li>
+      <li><a href="{{ url_for('student.my_orders') }}">📋 Track My Orders & Tokens</a></li>
+      {% if session.get('user_role') == 'admin' %}
+        <li style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle); font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800;">Admin Management</li>
+        <li><a href="{{ url_for('admin.dashboard') }}" style="color: var(--sug-navy); font-weight: 700;">⚙️ Kitchen Display System</a></li>
+        <li><a href="{{ url_for('admin.menu_management') }}" style="color: var(--sug-navy); font-weight: 700;">📦 Daily Menu & Stock</a></li>
+      {% endif %}
+    </ul>
+
+    <div style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle);">
+      {% if session.get('user_email') %}
+        <div style="margin-bottom: 0.75rem; font-size: 0.9rem;">
+          Signed in as <strong>{{ session.get('user_name') }}</strong>
+        </div>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-block btn-sm">Sign Out</a>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-block">Sign In to Order</a>
+      {% endif %}
+    </div>
+  </aside>
+
+  <!-- Flash Messages Notifications Container -->
+  <div class="container" style="margin-top: 1rem;">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div role="status" aria-live="polite">
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}" style="display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.25rem; border-radius: var(--radius-md); margin-bottom: 1rem; font-weight: 500;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span>{% if category == 'success' %}✅{% elif category == 'danger' %}⚠️{% else %}ℹ️{% endif %}</span>
+                <span>{{ message }}</span>
+              </div>
+              <button onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 1.3rem; line-height: 1; cursor: pointer; color: inherit; padding: 0 4px;" aria-label="Dismiss message">&times;</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Page Main Content Block -->
+  <main id="main-content" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Institutional Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="footer-brand-logo">
+            <img 
+              src="{{ url_for('static', filename='images/sug_logo_naacA.png') }}" 
+              alt="Shobhit University Gangoh NAAC 'A' Grade" 
+              loading="lazy">
+          </div>
+          <p>
+            The Official Campus Canteen Management Portal for <strong>Shobhit University, Gangoh</strong>. Serving 100% hygienic, freshly-prepared vegetarian meals, quick snacks, and refreshing hot & cold beverages to students, faculty, and campus guests.
+          </p>
+          <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
+            📍 Adarsh Institutional Area, Babu Vijendra Marg, Gangoh, Distt. Saharanpur, Uttar Pradesh – 247341
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Canteen Categories</h4>
+          <ul>
+            <li><a href="{{ url_for('student.menu', category='Snacks') }}">🥟 Crispy Snacks & Samosas</a></li>
+            <li><a href="{{ url_for('student.menu', category='Fast Food') }}">🍔 Veg Burgers & Noodles</a></li>
+            <li><a href="{{ url_for('student.menu', category='Meals') }}">🍛 Special North Indian Thali</a></li>
+            <li><a href="{{ url_for('student.menu', category='Beverages') }}">☕ Kulhad Masala Chai & Lassi</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Quick Services</h4>
+          <ul>
+            <li><a href="{{ url_for('student.menu') }}">Browse Daily Menu</a></li>
+            <li><a href="{{ url_for('student.cart') }}">View Current Tray</a></li>
+            <li><a href="{{ url_for('student.my_orders') }}">Live Token Status Tracker</a></li>
+            <li><a href="{{ url_for('auth.login') }}">Student & Faculty Login</a></li>
+            {% if session.get('user_role') == 'admin' %}
+              <li><a href="{{ url_for('admin.dashboard') }}">Kitchen Admin Dashboard</a></li>
+            {% endif %}
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Timings & Helpline</h4>
+          <ul>
+            <li><strong>Breakfast:</strong> 8:30 AM – 11:30 AM</li>
+            <li><strong>Lunch Service:</strong> 12:30 PM – 3:30 PM</li>
+            <li><strong>Evening Snacks:</strong> 4:30 PM – 8:30 PM</li>
+            <li><strong>Helpline:</strong> +91 1331 236300</li>
+            <li><strong>Email:</strong> mail@shobhituniversity.ac.in</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          &copy; {{ current_year or 2026 }} Shobhit University Gangoh. All Rights Reserved. NAAC 'A' Grade Accredited Deemed-to-be-University.
+        </div>
+        <div>
+          Campus Canteen Management System &bull; Designed for fast, queue-free student dining.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Core JavaScript -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

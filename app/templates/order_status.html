@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Order Token #{{ order.token }} - SU-Gangoh Canteen{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="order-tracker-card">
+    
+    <!-- Token Hero Box -->
+    <div class="token-hero-box">
+      <div class="token-badge-title">Official Canteen Order Token</div>
+      <div class="token-number">{{ order.token }}</div>
+      <p class="token-subtext">
+        Show this token number at <strong>{{ order.delivery_spot }}</strong> to collect your food.
+      </p>
+      <div style="margin-top: 0.85rem;">
+        <span id="order-current-status-pill" class="status-badge status-{{ order.status | lower }}" style="font-size: 0.95rem; padding: 0.4rem 1.1rem;">
+          {{ order.status }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Live Status Description Banner -->
+    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 2.5rem; text-align: center;">
+      <p id="order-status-description" style="font-size: 0.95rem; color: var(--text-main); font-weight: 500;">
+        {% if order.status == 'Pending' %}
+          Your order has been received by the canteen counter and is queued for preparation.
+        {% elif order.status == 'Preparing' %}
+          Chef is currently preparing your fresh hot food in the kitchen.
+        {% elif order.status == 'Ready' %}
+          🎉 Your food is READY! Please show your Token at the pickup counter.
+        {% elif order.status == 'Delivered' %}
+          Order collected. Enjoy your meal at Shobhit University!
+        {% else %}
+          Order status: {{ order.status }}
+        {% endif %}
+      </p>
+    </div>
+
+    <!-- Stepper Progress Tracker -->
+    {% set status_step = 1 %}
+    {% if order.status == 'Preparing' %}{% set status_step = 2 %}
+    {% elif order.status == 'Ready' %}{% set status_step = 3 %}
+    {% elif order.status == 'Delivered' %}{% set status_step = 4 %}
+    {% endif %}
+
+    <div class="stepper-wrap">
+      {% set fill_pct = '0%' %}
+      {% if status_step == 2 %}{% set fill_pct = '33%' %}
+      {% elif status_step == 3 %}{% set fill_pct = '66%' %}
+      {% elif status_step == 4 %}{% set fill_pct = '100%' %}
+      {% endif %}
+      
+      <div class="stepper-progress-fill" id="order-progress-fill" style="width: {{ fill_pct }};"></div>
+
+      <!-- Step 1: Order Placed -->
+      <div class="step-node {% if status_step > 1 %}completed{% elif status_step == 1 %}active{% endif %}" id="step-node-1">
+        <div class="step-circle">1</div>
+        <div class="step-label">Order Placed</div>
+      </div>
+
+      <!-- Step 2: In Kitchen -->
+      <div class="step-node {% if status_step > 2 %}completed{% elif status_step == 2 %}active{% endif %}" id="step-node-2">
+        <div class="step-circle">2</div>
+        <div class="step-label">In Kitchen</div>
+      </div>
+
+      <!-- Step 3: Ready for Pickup -->
+      <div class="step-node {% if status_step > 3 %}completed{% elif status_step == 3 %}active{% endif %}" id="step-node-3">
+        <div class="step-circle">3</div>
+        <div class="step-label">Ready for Pickup</div>
+      </div>
+
+      <!-- Step 4: Collected -->
+      <div class="step-node {% if status_step == 4 %}completed{% endif %}" id="step-node-4">
+        <div class="step-circle">4</div>
+        <div class="step-label">Collected</div>
+      </div>
+    </div>
+
+    <!-- Order Details Breakdown -->
+    <div style="background: white; border-radius: var(--radius-md); border: 1px solid var(--border-color); padding: 1.5rem; margin-bottom: 2rem;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.5rem;">
+        Order Information
+      </h3>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+        <div>
+          <span style="color: var(--text-muted); display: block; font-size: 0.8rem;">STUDENT NAME</span>
+          <strong>{{ order.student_name }}</strong> ({{ order.roll_no }})
+        </div>
+        <div>
+          <span style="color: var(--text-muted); display: block; font-size: 0.8rem;">PICKUP COUNTER</span>
+          <strong>{{ order.delivery_spot }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); display: block; font-size: 0.8rem;">PAYMENT METHOD</span>
+          <strong>{{ order.payment_method }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); display: block; font-size: 0.8rem;">ORDER TIME</span>
+          <strong>{{ order.created_at }}</strong>
+        </div>
+      </div>
+
+      {% if order.special_notes %}
+        <div style="background: #fffbeb; border: 1px solid #fef3c7; padding: 0.65rem 0.95rem; border-radius: var(--radius-sm); font-size: 0.85rem; color: #92400e; margin-bottom: 1.25rem;">
+          📝 <strong>Note:</strong> {{ order.special_notes }}
+        </div>
+      {% endif %}
+
+      <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Itemized Receipt</h4>
+      <div style="border-top: 1px solid #f1f5f9;">
+        {% for it in order['items'] %}
+        <div style="display: flex; justify-content: space-between; padding: 0.65rem 0; border-bottom: 1px solid #f8fafc; font-size: 0.925rem;">
+          <div>
+            <strong>{{ it.quantity }}x</strong> {{ it.name }}
+          </div>
+          <div style="font-weight: 600;">
+            {{ it.subtotal | inr }}
+          </div>
+        </div>
+        {% endfor %}
+
+        <div style="display: flex; justify-content: space-between; padding-top: 1rem; font-size: 1.15rem; font-weight: 800; color: var(--primary);">
+          <span>Total Paid</span>
+          <span>{{ order.total_amount | inr }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Polling Notice & Actions -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 0.825rem; color: var(--text-muted);">
+        <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
+        Live Auto-Updating: No page reload required
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <a href="{{ url_for('student.menu') }}" class="btn btn-outline btn-sm">Order More</a>
+        <a href="{{ url_for('student.my_orders') }}" class="btn btn-primary btn-sm">My Orders</a>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Start automatic polling for live order status update
+  initOrderPolling('{{ order.token }}');
+});
+</script>
+{% endblock %}

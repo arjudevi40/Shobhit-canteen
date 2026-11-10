@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Campus Dining{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section" aria-label="Welcome Banner">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-content">
+        <div class="hero-badge-wrap">
+          <div class="hero-badge">
+            <span>🎓</span> Shobhit University Gangoh
+          </div>
+          <div class="hero-naac-badge">
+            <span>⭐</span> NAAC 'A' GRADE ACCREDITED
+          </div>
+        </div>
+        
+        <h1 class="hero-title">
+          Fresh, Hygienic & Delicious Campus Food <span>Prepared Daily</span>
+        </h1>
+        <p class="hero-subtitle">
+          Avoid long lunch queues at the counter! Explore today's freshly prepared specials, customize your meal, pay digitally via UPI or cash, and monitor your live pickup token directly on your device.
+        </p>
+
+        <div class="hero-actions">
+          <a href="{{ url_for('student.menu') }}" class="btn btn-accent btn-lg" aria-label="Explore daily canteen food menu">
+            🍔 Explore Daily Menu
+          </a>
+          <a href="{{ url_for('student.my_orders') }}" class="btn btn-outline" style="color: #ffffff; border-color: rgba(255,255,255,0.4);" aria-label="Track live canteen order token">
+            🎫 Track Token Status
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <div class="hero-card-header">
+          <div style="font-weight: 800; color: #ffffff; font-size: 1.05rem;">🕒 Central Dining Hall Status</div>
+          <span class="hero-status-pill">
+            <span style="width: 7px; height: 7px; background: #ffffff; border-radius: 50%; display: inline-block;"></span>
+            OPEN NOW
+          </span>
+        </div>
+        <p style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 1.35rem; line-height: 1.5;">
+          Central Campus Dining Complex, Adarsh Campus, Gangoh. Serving freshly cooked North Indian delicacies, hot snacks, and beverages.
+        </p>
+        
+        <div class="hero-stats-row">
+          <div class="hero-stat-box">
+            <div class="num">12 Min</div>
+            <div class="lbl">Avg. Prep Time</div>
+          </div>
+          <div class="hero-stat-box">
+            <div class="num">100%</div>
+            <div class="lbl">Hygienic Pure Veg</div>
+          </div>
+          <div class="hero-stat-box">
+            <div class="num">4 Categories</div>
+            <div class="lbl">Snacks to Full Thali</div>
+          </div>
+          <div class="hero-stat-box">
+            <div class="num">Live Token</div>
+            <div class="lbl">Queue Elimination</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Category Selection Section -->
+<section style="padding: 4rem 0 1.5rem;" aria-label="Food Categories">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2>Canteen Food Categories</h2>
+        <p>Choose from our student-favorite culinary categories made fresh throughout the day</p>
+      </div>
+      <a href="{{ url_for('student.menu') }}" class="btn btn-outline-primary btn-sm">
+        View Complete Menu &rarr;
+      </a>
+    </div>
+
+    <div class="categories-grid">
+      <!-- Snacks -->
+      <a href="{{ url_for('student.menu', category='Snacks') }}" class="category-card" aria-label="Browse Snacks category">
+        <div class="cat-icon-wrap cat-snacks" aria-hidden="true">🥟</div>
+        <h3>Snacks</h3>
+        <span>Samosas, Khasta Kachori, Paneer Bread Pakora & Patties</span>
+      </a>
+
+      <!-- Fast Food -->
+      <a href="{{ url_for('student.menu', category='Fast Food') }}" class="category-card" aria-label="Browse Fast Food category">
+        <div class="cat-icon-wrap cat-fastfood" aria-hidden="true">🍔</div>
+        <h3>Fast Food</h3>
+        <span>Crispy Veg Burgers, Chowmein, Grilled Sandwiches & Fries</span>
+      </a>
+
+      <!-- Meals -->
+      <a href="{{ url_for('student.menu', category='Meals') }}" class="category-card" aria-label="Browse Meals category">
+        <div class="cat-icon-wrap cat-meals" aria-hidden="true">🍛</div>
+        <h3>Meals</h3>
+        <span>Special Shobhit Thali, Kashmiri Rajma Chawal, Chole Bhature</span>
+      </a>
+
+      <!-- Beverages -->
+      <a href="{{ url_for('student.menu', category='Beverages') }}" class="category-card" aria-label="Browse Beverages category">
+        <div class="cat-icon-wrap cat-beverages" aria-hidden="true">☕</div>
+        <h3>Beverages</h3>
+        <span>Kulhad Masala Chai, South Indian Coffee, Sweet Lassi</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Highlights Grid -->
+<section style="padding: 3rem 0 5rem; background: #ffffff; border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);" aria-label="Popular Dishes">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2>Today's Popular Campus Picks</h2>
+        <p>Top-rated items ordered by Shobhit University students and faculty members</p>
+      </div>
+      <a href="{{ url_for('student.menu') }}" class="btn btn-outline btn-sm">
+        See All Dishes
+      </a>
+    </div>
+
+    <div class="menu-grid">
+      {% for item in featured_items %}
+      <article class="food-card" data-name="{{ item.name }}" data-category="{{ item.category }}" data-desc="{{ item.description }}">
+        <div class="food-card-img-wrap">
+          <img src="{{ item.image }}" alt="{{ item.name }}" loading="lazy">
+          
+          {% if item.veg %}
+            <div class="veg-badge" title="Pure Vegetarian (FSSAI Standard)" aria-label="Vegetarian"><div class="veg-dot"></div></div>
+          {% else %}
+            <div class="non-veg-badge" title="Non-Vegetarian" aria-label="Non-Vegetarian"><div class="non-veg-triangle"></div></div>
+          {% endif %}
+
+          <span class="prep-time-badge" aria-label="Preparation time {{ item.prep_time }}">⏱️ {{ item.prep_time }}</span>
+
+          {% if not item.is_available %}
+            <div class="out-of-stock-overlay" role="status">
+              <span>SOLD OUT</span>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="food-card-body">
+          <div class="food-cat-tag">{{ item.category }}</div>
+          <h3 class="food-title">{{ item.name }}</h3>
+          <p class="food-desc">{{ item.description }}</p>
+
+          <div class="food-card-footer">
+            <div class="food-price">{{ item.price | inr }}</div>
+
+            {% if item.is_available %}
+              <button 
+                type="button" 
+                class="btn btn-accent btn-sm"
+                onclick="CanteenCart.addItem({ item_id: '{{ item.item_id }}', name: '{{ item.name }}', price: {{ item.price }}, image: '{{ item.image }}' }, this)"
+                aria-label="Add {{ item.name }} to food tray for {{ item.price | inr }}">
+                + Add to Tray
+              </button>
+            {% else %}
+              <button type="button" class="btn btn-outline btn-sm" disabled style="opacity: 0.6; cursor: not-allowed;" aria-disabled="true">
+                Unavailable
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- How It Works Section -->
+<section style="padding: 4.5rem 0;" aria-label="Ordering Steps">
+  <div class="container">
+    <div style="text-align: center; max-width: 650px; margin: 0 auto 3.5rem;">
+      <h2 style="font-size: 2.15rem; font-weight: 900; margin-bottom: 0.65rem; color: var(--sug-navy); letter-spacing: -0.3px;">
+        How Campus Ordering Works
+      </h2>
+      <p style="color: var(--text-muted); font-size: 1.05rem;">
+        Three simple steps to enjoy piping hot food without waiting in counter crowds
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+      <div style="background: #ffffff; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 2.25rem 2rem; text-align: center; box-shadow: var(--shadow-sm); position: relative;">
+        <div style="width: 64px; height: 64px; background: #dbeafe; color: #1e40af; border-radius: 50%; font-size: 1.75rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.35rem; font-weight: 900; box-shadow: 0 4px 10px rgba(30, 64, 175, 0.15);">
+          1
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-primary);">Pick Your Dishes</h3>
+        <p style="color: var(--text-muted); font-size: 0.925rem; line-height: 1.6;">
+          Browse our freshly prepared menu items across snacks, meals, and beverages with transparent subsidized pricing.
+        </p>
+      </div>
+
+      <div style="background: #ffffff; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 2.25rem 2rem; text-align: center; box-shadow: var(--shadow-sm); position: relative;">
+        <div style="width: 64px; height: 64px; background: #fef3c7; color: #b45309; border-radius: 50%; font-size: 1.75rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.35rem; font-weight: 900; box-shadow: 0 4px 10px rgba(180, 83, 9, 0.15);">
+          2
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-primary);">Receive Live Token</h3>
+        <p style="color: var(--text-muted); font-size: 0.925rem; line-height: 1.6;">
+          Confirm your order to immediately receive an official token number (e.g. <code>SUG-1048</code>) with an animated live kitchen status.
+        </p>
+      </div>
+
+      <div style="background: #ffffff; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 2.25rem 2rem; text-align: center; box-shadow: var(--shadow-sm); position: relative;">
+        <div style="width: 64px; height: 64px; background: #dcfce7; color: #15803d; border-radius: 50%; font-size: 1.75rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.35rem; font-weight: 900; box-shadow: 0 4px 10px rgba(21, 128, 61, 0.15);">
+          3
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-primary);">Pick Up When Ready</h3>
+        <p style="color: var(--text-muted); font-size: 0.925rem; line-height: 1.6;">
+          When your screen indicates "Ready for Pickup", flash your token at Counter 1 or Counter 2 and enjoy your meal immediately!
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

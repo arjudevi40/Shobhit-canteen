@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Food Menu - Shobhit University Gangoh Canteen{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 5rem;">
+
+  <!-- Page Header -->
+  <div class="section-header" style="margin-bottom: 2rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.35rem;">
+        <span class="naac-tag">NAAC 'A' ACCREDITED CAMPUS</span>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">&bull; Central Dining Hall</span>
+      </div>
+      <h1 style="font-size: 2.35rem; font-weight: 900; color: var(--sug-navy); letter-spacing: -0.4px;">
+        University Canteen Daily Menu
+      </h1>
+      <p style="color: var(--text-muted); font-size: 1.05rem;">
+        Browse freshly prepared campus meals, snacks, and refreshing drinks
+      </p>
+    </div>
+    
+    <div style="font-size: 0.85rem; color: var(--veg-green); font-weight: 700; background: var(--veg-green-light); padding: 0.45rem 1rem; border-radius: var(--radius-full); display: inline-flex; align-items: center; gap: 8px; border: 1px solid #bbf7d0;">
+      <span style="width: 8px; height: 8px; background: var(--veg-green); border-radius: 50%;" aria-hidden="true"></span>
+      100% Hygienic & FSSAI Standards
+    </div>
+  </div>
+
+  <!-- Search and Category Filter Bar -->
+  <div class="filter-search-bar" role="search" aria-label="Search and filter food menu">
+    <div class="search-input-wrap">
+      <span class="search-icon" aria-hidden="true">🔍</span>
+      <input 
+        type="text" 
+        id="menu-search-input" 
+        placeholder="Search for samosa, burger, chowmein, thali, chai..." 
+        value="{{ search_query }}"
+        aria-label="Search food items">
+    </div>
+
+    <!-- Category Filter Tabs -->
+    <div class="category-tabs" role="tablist" aria-label="Food categories">
+      {% for cat in categories %}
+        <a 
+          href="{{ url_for('student.menu', category=cat) }}" 
+          class="category-tab-btn {% if selected_category == cat %}active{% endif %}"
+          role="tab"
+          aria-selected="{% if selected_category == cat %}true{% else %}false{% endif %}">
+          {% if cat == 'All' %}🍽️ All Menu{% elif cat == 'Snacks' %}🥟 Snacks{% elif cat == 'Fast Food' %}🍔 Fast Food{% elif cat == 'Meals' %}🍛 Meals{% elif cat == 'Beverages' %}☕ Beverages{% else %}{{ cat }}{% endif %}
+        </a>
+      {% endfor %}
+    </div>
+
+    <!-- Pure Veg Toggle -->
+    <div class="dietary-filter-group">
+      <label class="dietary-chip" style="cursor: pointer; user-select: none;">
+        <input type="checkbox" id="filter-veg-only" style="width: 16px; height: 16px; accent-color: var(--veg-green);">
+        <span>🟢 Pure Veg Only</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Food Items Grid -->
+  {% if items %}
+    <div class="menu-grid" id="menu-items-grid">
+      {% for item in items %}
+      <article class="food-card" data-name="{{ item.name }}" data-category="{{ item.category }}" data-desc="{{ item.description }}" data-veg="{{ 'true' if item.veg else 'false' }}">
+        <div class="food-card-img-wrap">
+          <img src="{{ item.image }}" alt="{{ item.name }}" loading="lazy">
+          
+          {% if item.veg %}
+            <div class="veg-badge" title="Pure Vegetarian" aria-label="Pure Vegetarian"><div class="veg-dot"></div></div>
+          {% else %}
+            <div class="non-veg-badge" title="Non-Vegetarian" aria-label="Non-Vegetarian"><div class="non-veg-triangle"></div></div>
+          {% endif %}
+
+          <span class="prep-time-badge" aria-label="Prep time {{ item.prep_time }}">⏱️ {{ item.prep_time }}</span>
+
+          {% if not item.is_available %}
+            <div class="out-of-stock-overlay" role="status">
+              <span>SOLD OUT</span>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="food-card-body">
+          <div class="food-cat-tag">{{ item.category }}</div>
+          <h3 class="food-title">{{ item.name }}</h3>
+          <p class="food-desc">{{ item.description }}</p>
+
+          <div class="food-card-footer">
+            <div class="food-price">{{ item.price | inr }}</div>
+
+            {% if item.is_available %}
+              <button 
+                type="button" 
+                class="btn btn-accent btn-sm"
+                onclick="CanteenCart.addItem({ item_id: '{{ item.item_id }}', name: '{{ item.name }}', price: {{ item.price }}, image: '{{ item.image }}' }, this)"
+                aria-label="Add {{ item.name }} to food tray for {{ item.price | inr }}">
+                + Add to Tray
+              </button>
+            {% else %}
+              <button type="button" class="btn btn-outline btn-sm" disabled style="opacity: 0.6; cursor: not-allowed;" aria-disabled="true">
+                Unavailable
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <!-- Dynamic No-Search Results Box (Shown via JS when filtering) -->
+    <div id="no-search-results" class="empty-state" style="display: none; background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle); padding: 3rem 1.5rem;">
+      <div class="empty-icon">🔍</div>
+      <h3 style="color: var(--sug-navy); font-weight: 800;">No Matching Dishes Found</h3>
+      <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Try adjusting your keyword or dietary filter.</p>
+      <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('menu-search-input').value=''; document.getElementById('filter-veg-only').checked=false; initMenuFilters();">
+        Reset Search Filters
+      </button>
+    </div>
+
+  {% else %}
+    <div class="empty-state" style="background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle); padding: 3.5rem 1.5rem;">
+      <div class="empty-icon">🍽️</div>
+      <h3 style="color: var(--sug-navy); font-weight: 800;">No Food Items in this Category</h3>
+      <p style="color: var(--text-muted); margin-bottom: 1.5rem;">No dishes currently match your category filter.</p>
+      <a href="{{ url_for('student.menu') }}" class="btn btn-primary btn-sm">View All Dishes</a>
+    </div>
+  {% endif %}
+
+  <!-- Bottom Floating Cart Tray Bar -->
+  <aside id="floating-cart-bar" style="position: sticky; bottom: 20px; z-index: 900; display: none; margin-top: 2rem;" aria-label="Quick Checkout Bar">
+    <div style="background: #091e3a; color: #ffffff; border-radius: var(--radius-xl); padding: 1.15rem 1.75rem; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-xl); border: 1px solid rgba(255,255,255,0.18);">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <span style="font-size: 1.75rem;">🛒</span>
+        <div>
+          <div style="font-weight: 800; font-size: 1.05rem;"><span id="float-cart-count">0</span> Dishes on Tray</div>
+          <div style="font-size: 0.85rem; color: #cbd5e1;">Subtotal: <strong id="float-cart-total" style="color: #fbbf24; font-size: 1rem;">₹0</strong></div>
+        </div>
+      </div>
+      <a href="{{ url_for('student.cart') }}" class="btn btn-accent btn-md" style="font-weight: 800;">
+        Review Tray &amp; Checkout &rarr;
+      </a>
+    </div>
+  </aside>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function checkFloatingCart() {
+  const count = CanteenCart.getCount();
+  const total = CanteenCart.getTotal();
+  const floatBar = document.getElementById('floating-cart-bar');
+  const floatCount = document.getElementById('float-cart-count');
+  const floatTotal = document.getElementById('float-cart-total');
+
+  if (floatBar && count > 0) {
+    floatBar.style.display = 'block';
+    if (floatCount) floatCount.textContent = count;
+    if (floatTotal) floatTotal.textContent = `₹${total.toFixed(2)}`;
+  } else if (floatBar) {
+    floatBar.style.display = 'none';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  checkFloatingCart();
+  window.addEventListener('storage', checkFloatingCart);
+});
+</script>
+{% endblock %}

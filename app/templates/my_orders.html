@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders & Active Tokens - SU-Gangoh Canteen{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+
+  <div class="section-header" style="margin-bottom: 2rem;">
+    <div>
+      <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--primary-dark);">My Canteen Orders</h1>
+      <p style="color: var(--text-muted);">View your live food tokens and past dining history</p>
+    </div>
+    <a href="{{ url_for('student.menu') }}" class="btn btn-accent btn-sm">
+      + New Order
+    </a>
+  </div>
+
+  {% if orders %}
+    <div style="display: grid; gap: 1.25rem;">
+      {% for o in orders %}
+      <div style="background: white; border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
+        
+        <div>
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+            <span class="order-token-badge">{{ o.token }}</span>
+            <span class="status-badge status-{{ o.status | lower }}">{{ o.status }}</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">{{ o.created_at }}</span>
+          </div>
+
+          <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.25rem;">
+            {% for it in o['items'] %}
+              {{ it.quantity }}x {{ it.name }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </div>
+
+          <div style="font-size: 0.825rem; color: var(--text-muted);">
+            Pickup at: <strong>{{ o.delivery_spot }}</strong> &bull; Paid via: <strong>{{ o.payment_method }}</strong>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+          <div style="text-align: right;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">TOTAL AMOUNT</span>
+            <strong style="font-size: 1.25rem; color: var(--primary);">{{ o.total_amount | inr }}</strong>
+          </div>
+
+          <a href="{{ url_for('student.order_status', token=o.token) }}" class="btn btn-primary btn-sm">
+            Live Tracker &rarr;
+          </a>
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state" style="background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+      <div class="empty-icon">📋</div>
+      <h3>No Orders Placed Yet</h3>
+      <p>You haven't placed any canteen orders today.</p>
+      <a href="{{ url_for('student.menu') }}" class="btn btn-accent">
+        Browse Menu & Place Order &rarr;
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

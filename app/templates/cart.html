@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Your Cart & Checkout - SU-Gangoh Canteen{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+
+  <div class="section-header" style="margin-bottom: 2rem;">
+    <div>
+      <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--primary-dark);">Your Canteen Tray</h1>
+      <p style="color: var(--text-muted);">Review selected dishes and complete your counter pickup order</p>
+    </div>
+    <button type="button" class="btn btn-outline btn-sm" onclick="clearCartConfirm()" id="clear-cart-btn" style="display: none;">
+      🗑️ Clear Cart
+    </button>
+  </div>
+
+  <!-- Cart Layout Grid -->
+  <div class="cart-layout" id="cart-content-wrapper">
+    
+    <!-- Left Column: Cart Items List -->
+    <div class="cart-items-card">
+      <div class="cart-card-header">
+        <h2>Order Items (<span id="cart-items-count-header">0</span>)</h2>
+        <a href="{{ url_for('student.menu') }}" style="font-size: 0.85rem; font-weight: 600;">+ Add More Dishes</a>
+      </div>
+
+      <!-- Container where JS renders cart item rows -->
+      <div id="cart-items-container">
+        <!-- Rendered by JavaScript -->
+      </div>
+
+      <!-- Empty Cart Message -->
+      <div id="empty-cart-message" class="empty-state" style="display: none;">
+        <div class="empty-icon">🛒</div>
+        <h3>Your food tray is currently empty!</h3>
+        <p>Looks like you haven't added any snacks, burgers, or drinks yet.</p>
+        <a href="{{ url_for('student.menu') }}" class="btn btn-accent">
+          Explore Canteen Menu &rarr;
+        </a>
+      </div>
+    </div>
+
+    <!-- Right Column: Checkout Simulation & Summary -->
+    <div class="cart-summary-card" id="checkout-summary-section">
+      <h2 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1.5px solid var(--border-color);">
+        Checkout Details
+      </h2>
+
+      <form action="{{ url_for('student.checkout') }}" method="POST" id="checkout-form" onsubmit="return handleCheckoutSubmit(event)">
+        <!-- Hidden input holding JSON stringified cart items -->
+        <input type="hidden" name="cart_data" id="hidden_cart_data" value="[]">
+
+        <!-- Student Information -->
+        <div class="form-group">
+          <label class="form-label">Student / Customer Name</label>
+          <input 
+            type="text" 
+            name="name" 
+            class="form-control" 
+            value="{{ session.get('user_name', '') }}" 
+            placeholder="e.g. Aman Sharma" 
+            required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label class="form-label">Roll No / ID</label>
+            <input 
+              type="text" 
+              name="roll_no" 
+              class="form-control" 
+              value="{{ session.get('roll_no', 'SUG2024CS042') }}" 
+              placeholder="e.g. SUG2024CS042" 
+              required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone No.</label>
+            <input 
+              type="tel" 
+              name="phone" 
+              class="form-control" 
+              value="{{ session.get('phone', '+91 98980 12345') }}" 
+              placeholder="e.g. 9876543210" 
+              required>
+          </div>
+        </div>
+
+        <!-- Pickup / Delivery Spot Selection -->
+        <div class="form-group">
+          <label class="form-label">Pickup Location / Counter</label>
+          <div class="radio-cards-grid">
+            <label class="radio-card-label">
+              <input type="radio" name="delivery_spot" value="Counter 1 (Main Hall)" checked>
+              <div class="radio-card-content">
+                <div class="icon">🍱</div>
+                <div class="name">Counter 1 (Main)</div>
+              </div>
+            </label>
+            <label class="radio-card-label">
+              <input type="radio" name="delivery_spot" value="Counter 2 (Quick Snacks)">
+              <div class="radio-card-content">
+                <div class="icon">🥟</div>
+                <div class="name">Counter 2 (Snacks)</div>
+              </div>
+            </label>
+            <label class="radio-card-label">
+              <input type="radio" name="delivery_spot" value="Library Front Lawn">
+              <div class="radio-card-content">
+                <div class="icon">🌳</div>
+                <div class="name">Library Lawn</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Payment Method Simulation -->
+        <div class="form-group">
+          <label class="form-label">Payment Method (Simulation)</label>
+          <div class="radio-cards-grid">
+            <label class="radio-card-label">
+              <input type="radio" name="payment_method" value="Campus UPI" checked>
+              <div class="radio-card-content">
+                <div class="icon">📱</div>
+                <div class="name">Campus UPI</div>
+              </div>
+            </label>
+            <label class="radio-card-label">
+              <input type="radio" name="payment_method" value="Cash on Counter">
+              <div class="radio-card-content">
+                <div class="icon">💵</div>
+                <div class="name">Cash at Counter</div>
+              </div>
+            </label>
+            <label class="radio-card-label">
+              <input type="radio" name="payment_method" value="Student ID Wallet">
+              <div class="radio-card-content">
+                <div class="icon">💳</div>
+                <div class="name">Student Wallet</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Cooking Instructions -->
+        <div class="form-group">
+          <label class="form-label">Special Cooking Instructions (Optional)</label>
+          <input 
+            type="text" 
+            name="special_notes" 
+            class="form-control" 
+            placeholder="e.g. Less spicy, extra green chutney, hot tea">
+        </div>
+
+        <!-- Cost Breakdown -->
+        <div style="background: #f8fafc; border-radius: var(--radius-md); padding: 1rem; margin: 1.5rem 0; border: 1px solid var(--border-color);">
+          <div class="summary-line">
+            <span>Items Subtotal</span>
+            <strong id="summary-subtotal">₹0.00</strong>
+          </div>
+          <div class="summary-line">
+            <span>Campus Subsidy Discount</span>
+            <span style="color: var(--veg-green); font-weight: 600;">- ₹0.00</span>
+          </div>
+          <div class="summary-line">
+            <span>University Taxes / Charges</span>
+            <span>₹0.00 (Subsidized)</span>
+          </div>
+          <div class="summary-line total">
+            <span>Total Payable</span>
+            <span id="summary-total" style="color: var(--primary);">₹0.00</span>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-accent btn-block btn-lg" id="checkout-submit-btn">
+          🎫 Confirm Order & Generate Token
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function renderCartPage() {
+  const items = CanteenCart.getItems();
+  const container = document.getElementById('cart-items-container');
+  const emptyState = document.getElementById('empty-cart-message');
+  const summarySec = document.getElementById('checkout-summary-section');
+  const clearBtn = document.getElementById('clear-cart-btn');
+  const countHeader = document.getElementById('cart-items-count-header');
+  const subtotalElem = document.getElementById('summary-subtotal');
+  const totalElem = document.getElementById('summary-total');
+
+  if (!container) return;
+
+  if (items.length === 0) {
+    container.innerHTML = '';
+    emptyState.style.display = 'block';
+    if (summarySec) summarySec.style.opacity = '0.5';
+    if (summarySec) summarySec.style.pointerEvents = 'none';
+    if (clearBtn) clearBtn.style.display = 'none';
+    if (countHeader) countHeader.textContent = '0';
+    return;
+  }
+
+  emptyState.style.display = 'none';
+  if (summarySec) summarySec.style.opacity = '1';
+  if (summarySec) summarySec.style.pointerEvents = 'auto';
+  if (clearBtn) clearBtn.style.display = 'inline-block';
+  if (countHeader) countHeader.textContent = CanteenCart.getCount();
+
+  let html = '';
+  let subtotal = 0;
+
+  items.forEach(item => {
+    const itemTotal = item.price * (item.quantity || 1);
+    subtotal += itemTotal;
+
+    const imgFallback = item.image || 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=200&auto=format&fit=crop&q=80';
+
+    html += `
+      <div class="cart-item-row">
+        <img src="${imgFallback}" alt="${item.name}" class="cart-item-thumb">
+        
+        <div class="cart-item-meta">
+          <h4>${item.name}</h4>
+          <p>₹${item.price.toFixed(2)} each</p>
+        </div>
+
+        <div class="qty-control">
+          <button type="button" class="qty-btn" onclick="CanteenCart.updateQuantity('${item.item_id}', -1)">&minus;</button>
+          <span class="qty-display">${item.quantity || 1}</span>
+          <button type="button" class="qty-btn" onclick="CanteenCart.updateQuantity('${item.item_id}', 1)">&plus;</button>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="cart-item-subtotal">₹${itemTotal.toFixed(2)}</div>
+          <button type="button" class="cart-delete-btn" onclick="CanteenCart.removeItem('${item.item_id}')" title="Remove">✕</button>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+
+  if (subtotalElem) subtotalElem.textContent = `₹${subtotal.toFixed(2)}`;
+  if (totalElem) totalElem.textContent = `₹${subtotal.toFixed(2)}`;
+}
+
+function clearCartConfirm() {
+  if (confirm('Are you sure you want to clear all items from your tray?')) {
+    CanteenCart.clear();
+    renderCartPage();
+    showToast('Tray cleared', 'info');
+  }
+}
+
+function handleCheckoutSubmit(e) {
+  const items = CanteenCart.getItems();
+  if (items.length === 0) {
+    alert('Please add at least one food item to your tray before placing an order.');
+    e.preventDefault();
+    return false;
+  }
+
+  // Inject serialized cart items into hidden input
+  const hiddenInput = document.getElementById('hidden_cart_data');
+  if (hiddenInput) {
+    hiddenInput.value = JSON.stringify(items);
+  }
+
+  // Clear local storage cart once submitted so next time cart is clean
+  CanteenCart.clear();
+  return true;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderCartPage();
+});
+</script>
+{% endblock %}
+
